@@ -41,6 +41,10 @@ app.use((req, res, next) => {
     })
 })
 
+app.get("/", (req, res) => {
+    res.send("Backend is running!");
+});
+
 app.listen(port, () => {
     console.log(`[API]: Server is listening on ${port}`)
 })

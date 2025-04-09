@@ -20,7 +20,7 @@ const path = require('path');
 
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = 5000;
 
 // Middleware
 app.use(
@@ -59,14 +59,7 @@ app.use('/api/reservasi', reservasiRoutes);
 // public
 app.use('/api/public', publicRoutes);
 
-if (process.env.VERCEL) {
-  // Di Vercel, export app sehingga fungsi serverless dapat memproses request
-  module.exports = app;
-} else {
-  // Untuk development lokal
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    sequelize.authenticate().then(() => console.log('Database connected'));
-  });
-}
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  sequelize.authenticate().then(() => console.log('Database connected'));
+});

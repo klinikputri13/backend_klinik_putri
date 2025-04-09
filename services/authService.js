@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
 const Patient = require('../models/Patient');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 
 class AuthService {
   static async login(credentials) {

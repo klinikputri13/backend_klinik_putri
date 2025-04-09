@@ -1,0 +1,31 @@
+{
+  "name": "web-dokter-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "nodemon ./server.js",
+    "vercel-build": "echo 'No build step needed'"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^9.6.0",
+    "@supabase/supabase-js": "^2.49.3",
+    "bcryptjs": "^3.0.2",
+    "body-parser": "^2.2.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.2",
+    "pg": "^8.14.1",
+    "pg-hstore": "^2.3.4",
+    "postgres": "^3.4.5",
+    "sequelize": "^6.37.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9",
+    "sequelize-cli": "^6.6.2"
+  }
+}

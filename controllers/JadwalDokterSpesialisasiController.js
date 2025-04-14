@@ -40,7 +40,11 @@ class JadwalDokterSpesialisasiController {
   static async deleteJadwalDokterSpesialisasi(req, res) {
     try {
       const jadwalDokterSpesialisasi = await JadwalDokterSpesialisasiRepository.delete(req.params.id);
-      res.json(jadwalDokterSpesialisasi);
+      res.json({
+        message: "Jadwal dokter berhasil dihapus",
+        data: jadwalDokterSpesialisasi
+
+      });
     } catch (error) {
       res.status(500).send(error.message);
     }

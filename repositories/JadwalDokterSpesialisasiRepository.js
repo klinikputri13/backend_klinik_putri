@@ -96,8 +96,12 @@ class JadwalDokterSpesialisasiRepository {
   static async delete(id) {
     const jadwalSpesialisasi = await jadwalDokterSpesialisasi.findByPk(id);
     if (!jadwalSpesialisasi) throw new Error('jadwal dokter spesialisasi not found');
-    return await jadwalSpesialisasi.destroy();
+  
+    const dataSebelumHapus = jadwalSpesialisasi.toJSON(); // simpan datanya sebelum dihapus
+    await jadwalSpesialisasi.destroy(); // tetap hapus data seperti sebelumnya
+  
+    return dataSebelumHapus; // kembalikan data yang dihapus
   }
 }
-
+  
 module.exports = JadwalDokterSpesialisasiRepository;

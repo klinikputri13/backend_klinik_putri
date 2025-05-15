@@ -1,3 +1,4 @@
+const database = require('../config/database');
 const ReservasiRepository = require('../repositories/ReservasiRepository');
 const RiwayatRepository = require('../repositories/RiwayatRepository');
 
@@ -52,7 +53,11 @@ class ReservasiController {
         status: 'proses',
         nomorAntrian
       });
-      res.status(201).json({ reservasi, riwayat });
+      res.status(201).json({ 
+        message : 'Berhasil menambahkan reservasi online',
+        reservasi, 
+        riwayat 
+      });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: error.message });
@@ -85,7 +90,11 @@ class ReservasiController {
         status: 'proses',
         nomorAntrian
       });
-      res.status(201).json({ reservasi, riwayat });
+      res.status(201).json({ 
+        message  : 'Berhasil menambahkan Reservasi Onsite',
+        reservasi, 
+        riwayat 
+      });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: error.message });
@@ -99,7 +108,10 @@ class ReservasiController {
       if (!reservasi) {
         return res.status(404).json({ message: 'Reservasi not found' });
       }
-      res.status(200).json({ reservasi });
+      res.status(200).json({ 
+        message : 'Berhasil mengubah reservasi',
+        reservasi 
+      });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: error.message });
@@ -112,7 +124,10 @@ class ReservasiController {
       if (!reservasi) {
         return res.status(404).json({ message: 'Reservasi not found' });
       }
-      res.status(200).json({ message: 'Reservasi deleted successfully' });
+      res.status(200).json({ 
+        message: 'Data reservasi berhasil dihapus',
+        data : reservasi
+       });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: error.message });

@@ -13,6 +13,9 @@ class JadwalDokterUmumController {
   static async getJadwalDokterUmumById(req, res) {
     try {
       const jadwalDokterUmum = await JadwalDokterUmumRepository.getJadwalDokterUmumById(req.params.id);
+      if (!jadwalDokterUmum) {
+        return res.status (400).json ({message: 'Jadwal Dokter Umum not found'})
+      }
       res.json(jadwalDokterUmum);
     } catch (error) {
       res.status(500).send(error.message);
@@ -22,7 +25,13 @@ class JadwalDokterUmumController {
   static async createJadwalDokterUmum(req, res) {
     try {
       const jadwalDokterUmum = await JadwalDokterUmumRepository.create(req.body);
-      res.status(201).json(jadwalDokterUmum);
+      if (!jadwalDokterUmum) {
+      return res.status (400).json ({message: 'Jadwal Dokter Umum not found'})
+    }
+      res.status(201).json ({
+        message : 'Berhasil menambahkan jadwal Dokter Umum',
+        data : jadwalDokterUmum
+      });
     } catch (error) {
       res.status(500).send(error.message);
     }
@@ -31,7 +40,13 @@ class JadwalDokterUmumController {
   static async updateJadwalDokterUmum(req, res) {
     try {
       const jadwalDokterUmum = await JadwalDokterUmumRepository.update(req.params.id, req.body);
-      res.json(jadwalDokterUmum);
+        if (!jadwalDokterUmum) {
+      return res.status (404).json ({message: 'Jadwal Dokter Umum not found'})
+    }
+      res.json ({
+        message : 'Berhasil mengubah jadwal Dokter Umum',
+        data : jadwalDokterUmum
+      });
     } catch (error) {
       res.status(500).send(error.message);
     }
@@ -40,7 +55,13 @@ class JadwalDokterUmumController {
   static async deleteJadwalDokterUmum(req, res) {
     try {
       const jadwalDokterUmum = await JadwalDokterUmumRepository.delete(req.params.id);
-      res.json(jadwalDokterUmum);
+        if (!jadwalDokterUmum) {
+      return res.status (404).json ({message: 'Jadwal Dokter Umum not found'})
+    }
+      res.json ({
+        message : 'Berhasil menghapus jadwal Dokter Umum',
+        data : jadwalDokterUmum
+      });
     } catch (error) {
       res.status(500).send(error.message);
     }

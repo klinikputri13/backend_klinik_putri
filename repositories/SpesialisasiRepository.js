@@ -64,9 +64,11 @@ class SpesialisasiRepository {
   }
 
   static async deleteSpesialisasi(id) {
-    const user = await Spesialisasi.findByPk(id);
-    if (!user) throw new Error('Spesialisasi not found');
-    return await user.destroy();
+    const spesialisasi = await Spesialisasi.findByPk(id);
+    if (!spesialisasi) throw new Error('Spesialisasi not found');
+    const deletedData = spesialisasi.get ({plain: true});
+    await spesialisasi.destroy();
+    return deletedData;
   }
 }
 

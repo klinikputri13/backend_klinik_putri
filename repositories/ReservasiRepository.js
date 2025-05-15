@@ -77,9 +77,11 @@ class ReservasiRepository {
 
   static async deleteReservasi(id) {
     const reservasi = await Reservasi.findByPk(id);
-    if (!reservasi) throw new Error('Reservasi not found');
+    if (!reservasi) throw new Error('Reservasi Untuk Id ini tidak tersedia');
     await Riwayat.destroy({ where: { reservasiId: id } });
-    return await reservasi.destroy();
+    const deletedData = reservasi.get({ plain: true });
+    await reservasi.destroy();
+    return deletedData;
   }
 }
 

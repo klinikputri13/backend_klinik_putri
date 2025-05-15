@@ -74,7 +74,9 @@ class DoctorRepository {
   static async deleteDoctor(id) {
     const user = await Doctor.findByPk(id);
     if (!user) throw new Error('Doctor not found');
-    return await user.destroy();
+    const userData = user.toJSON();
+    await user.destroy();
+    return userData;
   }
 }
 

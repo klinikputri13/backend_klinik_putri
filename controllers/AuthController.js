@@ -1,11 +1,13 @@
 const AuthService = require('../services/authService');
+const jwt = require('jsonwebtoken');
 
 class AuthController {
-  static async login(req, res) {
+   static async login(req, res) {
     const { username, password } = req.body;
     try {
       const { user, token } = await AuthService.login({ username, password });
-      res.json({ user, token });
+      const decoded = jwt.decode(token);
+      res.json({ user, token, role: decoded.role });
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
@@ -32,7 +34,8 @@ class AuthController {
     try {
       const { username, password } = req.body;
       const { admin, token } = await AuthService.adminLogin({ username, password });
-      res.json({ admin, token });
+      const decoded = jwt.decode(token);
+      res.json({ admin, token, role: decoded.role });
     } catch (error) {
       res.status(400).json({ message: error.message });
     }

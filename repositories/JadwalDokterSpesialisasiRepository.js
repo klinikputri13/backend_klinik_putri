@@ -75,14 +75,14 @@ class JadwalDokterSpesialisasiRepository {
       where: { doctorId: data.doctorId }
     });
     if (exists) {
-      throw new Error('Jadwal dokter spesialis untuk dokter ini sudah ada.');
+      throw new Error('Jadwal dokter spesialis untuk Id dokter ini sudah ada.');
     }
     return await jadwalDokterSpesialisasi.create(data);
   }
 
   static async update(id, data) {
     const jadwalSpesialisasi = await jadwalDokterSpesialisasi.findByPk(id);
-    if (!jadwalSpesialisasi) throw new Error('jadwal dokter spesialisasi not found');
+    if (!jadwalSpesialisasi) throw new Error('id dokter tidak tersedia');
     await jadwalSpesialisasi.update(data);
     return await jadwalDokterSpesialisasi.findOne({
       where: { id },
@@ -95,9 +95,11 @@ class JadwalDokterSpesialisasiRepository {
 
   static async delete(id) {
     const jadwalSpesialisasi = await jadwalDokterSpesialisasi.findByPk(id);
-    if (!jadwalSpesialisasi) throw new Error('jadwal dokter spesialisasi not found');
-    return await jadwalSpesialisasi.destroy();
+    if (!jadwalSpesialisasi) throw new Error('jadwal dokter spesialisasi sudah tidak tersedia');
+    const deletedData = jadwalSpesialisasi.get({ plain: true });
+    await jadwalSpesialisasi.destroy();
+    return deletedData; 
   }
-}
+}  
 
 module.exports = JadwalDokterSpesialisasiRepository;

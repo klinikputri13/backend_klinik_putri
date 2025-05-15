@@ -22,7 +22,10 @@ class JadwalDokterSpesialisasiController {
   static async createJadwalDokterSpesialisasi(req, res) {
     try {
       const jadwalDokterSpesialisasi = await JadwalDokterSpesialisasiRepository.create(req.body);
-      res.status(201).json(jadwalDokterSpesialisasi);
+      res.status(201).json ({
+        message : 'Berhasil menambahkan Jadwal dokter Spesialis',
+        data : jadwalDokterSpesialisasi
+      });
     } catch (error) {
       res.status(500).send(error.message);
     }
@@ -31,7 +34,10 @@ class JadwalDokterSpesialisasiController {
   static async updateJadwalDokterSpesialisasi(req, res) {
     try {
       const jadwalDokterSpesialisasi = await JadwalDokterSpesialisasiRepository.update(req.params.id, req.body);
-      res.json(jadwalDokterSpesialisasi);
+      res.json({
+        message: 'Berhasil mengubah jadwal dokter spesialis',
+        data: jadwalDokterSpesialisasi
+      });
     } catch (error) {
       res.status(500).send(error.message);
     }
@@ -40,7 +46,10 @@ class JadwalDokterSpesialisasiController {
   static async deleteJadwalDokterSpesialisasi(req, res) {
     try {
       const jadwalDokterSpesialisasi = await JadwalDokterSpesialisasiRepository.delete(req.params.id);
-      res.json(jadwalDokterSpesialisasi);
+      res.json({
+        message: 'Berhasil menghapus jadwal dokter spesialis',
+        data: jadwalDokterSpesialisasi
+      });
     } catch (error) {
       res.status(500).send(error.message);
     }

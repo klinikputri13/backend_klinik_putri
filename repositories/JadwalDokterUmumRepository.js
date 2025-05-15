@@ -119,11 +119,13 @@ class JadwalDokterSpesialisasiRepository {
     });
   }
 
-  static async delete(id) {
-    const jadwalSpesialisasi = await jadwalDokterUmum.findByPk(id);
-    if (!jadwalSpesialisasi) throw new Error('jadwal dokter umum tidak ditemukan');
-    return await jadwalSpesialisasi.destroy();
-  }
+    static async delete(id) {
+      const jadwalDokter = await jadwalDokterUmum.findByPk(id);
+      if (!jadwalDokter) throw new Error('Jadwal dokter umum tidak ditemukan');
+      const deletedData = jadwalDokter.get({ plain: true });
+      await jadwalDokter.destroy();
+      return deletedData;
+    }
 }
 
 module.exports = JadwalDokterSpesialisasiRepository;

@@ -1,7 +1,7 @@
 const DoctorRepository = require('../repositories/DoctorRepository');
 const { getFileUrl } = require('../utils/fileUtils');
 
-class PatientController {
+class DoctorController {
   static async getAll(req, res) {
     try {
       const doctors = await DoctorRepository.getAll(req, res);
@@ -21,7 +21,7 @@ class PatientController {
         };
         res.json(result);
       } else {
-        res.status(404).json({ message: 'Spesialisasi not found' });
+        res.status(404).json({ message: 'Dokter tidak ditemukan' });
       }
     } catch (error) {
       res.status(500).send(error.message);
@@ -38,7 +38,10 @@ class PatientController {
         ...doctor.toJSON(),
         fotoUrl: getFileUrl(doctor.foto, req, 'doctor')
       };
-      res.status(201).json(result);
+      res.status(201).json({
+        message: 'Berhasil menambahkan data dokter!',
+        data: result
+      });
     } catch (error) {
       res.status(500).send(error.message);
     }
@@ -54,7 +57,10 @@ class PatientController {
         ...updated.toJSON(),
         fotoUrl: getFileUrl(updated.foto, req, 'doctor')
       };
-      res.json(result);
+      res.json({
+        message: 'Berhasil mengubah data dokter',
+        data: result
+      });
     } catch (error) {
       res.status(500).send(error.message);
     }
@@ -63,7 +69,10 @@ class PatientController {
   static async deleteDoctor(req, res) {
     try {
       const response = await DoctorRepository.deleteDoctor(req.params.id);
-      res.json({ response, message: 'Doctor deleted successfully' });
+      res.json({ 
+        message: 'Berhasil menghapus dokter',
+        response
+     });
     } catch (error) {
       res.status(500).send(error.message);
     }
@@ -72,7 +81,7 @@ class PatientController {
   static async uploadFoto(req, res) {
     try {
       if (!req.file) {
-        return res.status(400).json({ message: 'No file uploaded' });
+        return res.status(400).json({ message: 'File tidak ditemukan' });
       }
       const updated = await DoctorRepository.updateDoctor(req.params.id, {
         foto: req.file.filename,
@@ -88,4 +97,4 @@ class PatientController {
   }
 }
 
-module.exports = PatientController;
+module.exports = DoctorController;

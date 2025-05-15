@@ -1,5 +1,6 @@
 const SpesialisasiRepository = require('../repositories/SpesialisasiRepository');
 const { getFileUrl } = require('../utils/fileUtils');
+const supabase = require('../utils/supabaseClient');
 
 class SpesialisasiController {
   static async getAll(req, res) {
@@ -27,7 +28,9 @@ class SpesialisasiController {
         };
         res.json(result);
       } else {
-        res.status(404).json({ message: 'Spesialisasi not found' });
+        res.status(404).json({ 
+          message: 'Spesialisasi not found' 
+        });
       }
     } catch (error) {
       res.status(500).send(error.message);
@@ -44,7 +47,10 @@ class SpesialisasiController {
         ...spesialisasi.toJSON(),
         fotoUrl: getFileUrl(spesialisasi.foto, req, 'spesialisasi')
       };
-      res.status(201).json(result);
+      res.status(201).json ({
+          message : 'Berhasil menambahkan layanan Spesialisasi',
+          data : result
+      });
     } catch (error) {
       res.status(500).send(error.message);
     }
@@ -79,7 +85,10 @@ class SpesialisasiController {
         ...updated.toJSON(),
         fotoUrl: getFileUrl(updated.foto, req, 'spesialisasi')
       };
-      res.json(result);
+      res.json ({
+        message : 'Berhasil mengubah layanan Spesialisasi',
+        data : result
+      });
     } catch (error) {
       res.status(500).send(error.message);
     }
@@ -88,7 +97,10 @@ class SpesialisasiController {
   static async deleteSpesialisasi(req, res) {
     try {
       const response = await SpesialisasiRepository.deleteSpesialisasi(req.params.id);
-      res.json({ response, message: 'Spesialisasi deleted successfully' });
+      res.json({ 
+        message: 'Spesialisasi deleted successfully',
+        response
+    });
     } catch (error) {
       res.status(500).send(error.message);
     }

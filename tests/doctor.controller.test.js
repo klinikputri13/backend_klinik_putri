@@ -11,58 +11,45 @@ describe('DoctorController', () => {
   let req, res;
 
   beforeEach(() => {
-    req = { body: {}, params: {}, file: {} };
+    req = { body: {}, params: {}, file: null };
     res = {
       json: jest.fn(),
       status: jest.fn().mockReturnThis(),
-      send: jest.fn(),
+      send: jest.fn()
     };
-
     jest.clearAllMocks();
   });
 
-  test('createDoctor berhasil mengembalikan dokter yang dibuat', async () => {
-    req.body = { nama: 'Dr. Baru', spesialisasi: 'Umum' };
-    req.file = { filename: 'foto.jpg' };
+  // ==================== GET ALL ====================
+  test('getAll berhasil mengembalikan semua data dokter', async () => {
+    const doctors = [{ id: 1, nama: 'Dr. A' }, { id: 2, nama: 'Dr. B' }];
+    DoctorRepository.getAll.mockResolvedValue(doctors);
 
-    const createdDoctor = {
-      foto: 'foto.jpg',
-      toJSON: () => ({ id: 1, nama: 'Dr. Baru', spesialisasi: 'Umum', foto: 'foto.jpg' })
-    };
+    await DoctorController.getAll(req, res);
 
-    DoctorRepository.createDoctor = jest.fn().mockResolvedValue(createdDoctor);
-
-    await DoctorController.createDoctor(req, res);
-    expect(res.status).toHaveBeenCalledWith(201);
-    expect(res.json).toHaveBeenCalledWith({
-      id: 1,
-      nama: 'Dr. Baru',
-      spesialisasi: 'Umum',
-      foto: 'foto.jpg',
-      fotoUrl: 'http://example.com/doctor/foto.jpg'
-    });
+    expect(res.json).toHaveBeenCalledWith(doctors);
   });
 
-  test('createDoctor gagal karena kesalahan repository', async () => {
-    req.body = { nama: 'Dr. Baru', spesialisasi: 'Umum' };
-    req.file = { filename: 'foto.jpg' };
+  test('getAll gagal karena kesalahan repository', async () => {
+    DoctorRepository.getAll.mockRejectedValue(new Error('Repository Error'));
 
-    DoctorRepository.createDoctor = jest.fn().mockRejectedValue(new Error('Repository Error'));
+    await DoctorController.getAll(req, res);
 
-    await DoctorController.createDoctor(req, res);
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith('Repository Error');
   });
 
+  // ==================== GET BY ID ====================
   test('getDoctorById berhasil mengembalikan data dokter', async () => {
     req.params.id = 1;
     const doctor = {
       foto: 'foto.jpg',
       toJSON: () => ({ id: 1, nama: 'Dr. A', foto: 'foto.jpg' })
     };
-    DoctorRepository.getDoctorById = jest.fn().mockResolvedValue(doctor);
+    DoctorRepository.getDoctorById.mockResolvedValue(doctor);
 
     await DoctorController.getDoctorById(req, res);
+
     expect(res.json).toHaveBeenCalledWith({
       id: 1,
       nama: 'Dr. A',
@@ -71,24 +58,153 @@ describe('DoctorController', () => {
     });
   });
 
-  test('getDoctorById gagal dengan spesialisasi tidak ditemukan', async () => {
+  test('getDoctorById gagal karena dokter tidak ditemukan', async () => {
     req.params.id = 999;
-    DoctorRepository.getDoctorById = jest.fn().mockResolvedValue(null);
+    DoctorRepository.getDoctorById.mockResolvedValue(null);
 
     await DoctorController.getDoctorById(req, res);
+
     expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Spesialisasi not found' });
+    expect(res.json).toHaveBeenCalledWith({ message: 'Dokter tidak ditemukan' });
   });
 
   test('getDoctorById gagal karena kesalahan repository', async () => {
     req.params.id = 1;
-    DoctorRepository.getDoctorById = jest.fn().mockRejectedValue(new Error('Repository Error'));
+    DoctorRepository.getDoctorById.mockRejectedValue(new Error('Repository Error'));
 
     await DoctorController.getDoctorById(req, res);
+
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith('Repository Error');
   });
 
+  // ==================== CREATE ====================
+  test('createDoctor berhasil mengembalikan dokter yang dibuat dengan foto', async () => {
+    req.body = { nama: 'Dr. Baru' };
+    req.file = { filename: 'foto.jpg' };
+
+    const createdDoctor = {
+      foto: 'foto.jpg',
+      toJSON: () => ({ id: 1, nama: 'Dr. Baru', foto: 'foto.jpg' })
+    };
+
+    DoctorRepository.createDoctor.mockResolvedValue(createdDoctor);
+
+    await DoctorController.createDoctor(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Berhasil menambahkan data dokter!',
+      data: {
+        id: 1,
+        nama: 'Dr. Baru',
+        foto: 'foto.jpg',
+        fotoUrl: 'http://example.com/doctor/foto.jpg'
+      }
+    });
+  });
+
+  test('createDoctor berhasil mengembalikan dokter yang dibuat tanpa foto', async () => {
+    req.body = { nama: 'Dr. Tanpa Foto' };
+    req.file = undefined;
+
+    const createdDoctor = {
+      foto: undefined,
+      toJSON: () => ({ id: 2, nama: 'Dr. Tanpa Foto', foto: undefined })
+    };
+
+    DoctorRepository.createDoctor.mockResolvedValue(createdDoctor);
+
+    await DoctorController.createDoctor(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Berhasil menambahkan data dokter!',
+      data: {
+        id: 2,
+        nama: 'Dr. Tanpa Foto',
+        foto: undefined,
+        fotoUrl: 'http://example.com/doctor/foto.jpg'
+      }
+    });
+  });
+
+  test('createDoctor gagal karena kesalahan repository', async () => {
+    req.body = { nama: 'Dr. Error' };
+    req.file = undefined;
+
+    DoctorRepository.createDoctor.mockRejectedValue(new Error('Database error'));
+
+    await DoctorController.createDoctor(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith('Database error');
+  });
+
+  // ==================== UPDATE ====================
+  test('updateDoctor berhasil memperbarui data dokter', async () => {
+    req.params.id = 1;
+    req.body = { nama: 'Dr. Updated' };
+    req.file = { filename: 'updated.jpg' };
+
+    const updatedDoctor = {
+      foto: 'updated.jpg',
+      toJSON: () => ({ id: 1, nama: 'Dr. Updated', foto: 'updated.jpg' })
+    };
+
+    DoctorRepository.updateDoctor.mockResolvedValue(updatedDoctor);
+
+    await DoctorController.updateDoctor(req, res);
+
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Berhasil mengubah data dokter',
+      data: {
+        id: 1,
+        nama: 'Dr. Updated',
+        foto: 'updated.jpg',
+        fotoUrl: 'http://example.com/doctor/foto.jpg'
+      }
+    });
+  });
+
+  test('updateDoctor gagal karena kesalahan repository', async () => {
+    req.params.id = 1;
+    req.body = { nama: 'dr. Error' };
+
+    DoctorRepository.updateDoctor.mockRejectedValue(new Error('Something went wrong'));
+
+    await DoctorController.updateDoctor(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith('Something went wrong');
+  });
+
+  // ==================== DELETE ====================
+  test('deleteDoctor berhasil menghapus dokter', async () => {
+    req.params.id = 1;
+    const response = 'ok';
+
+    DoctorRepository.deleteDoctor.mockResolvedValue(response);
+
+    await DoctorController.deleteDoctor(req, res);
+
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Berhasil menghapus dokter',
+      response
+    });
+  });
+
+  test('deleteDoctor gagal karena kesalahan repository', async () => {
+    req.params.id = 1;
+    DoctorRepository.deleteDoctor.mockRejectedValue(new Error('Repository Error'));
+
+    await DoctorController.deleteDoctor(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith('Repository Error');
+  });
+
+  // ==================== UPLOAD FOTO ====================
   test('uploadFoto berhasil memperbarui foto dokter', async () => {
     req.params.id = 1;
     req.file = { filename: 'newFoto.jpg' };
@@ -98,9 +214,10 @@ describe('DoctorController', () => {
       toJSON: () => ({ id: 1, nama: 'Dr. A', foto: 'newFoto.jpg' })
     };
 
-    DoctorRepository.updateDoctor = jest.fn().mockResolvedValue(updatedDoctor);
+    DoctorRepository.updateDoctor.mockResolvedValue(updatedDoctor);
 
     await DoctorController.uploadFoto(req, res);
+
     expect(res.json).toHaveBeenCalledWith({
       id: 1,
       nama: 'Dr. A',
@@ -114,153 +231,20 @@ describe('DoctorController', () => {
     req.file = null;
 
     await DoctorController.uploadFoto(req, res);
+
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({ message: 'No file uploaded' });
+    expect(res.json).toHaveBeenCalledWith({ message: 'File tidak ditemukan' });
   });
 
   test('uploadFoto gagal karena kesalahan repository', async () => {
     req.params.id = 1;
     req.file = { filename: 'newFoto.jpg' };
 
-    DoctorRepository.updateDoctor = jest.fn().mockRejectedValue(new Error('Repository Error'));
+    DoctorRepository.updateDoctor.mockRejectedValue(new Error('Repository Error'));
 
     await DoctorController.uploadFoto(req, res);
+
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith('Repository Error');
   });
-
-  test('updateDoctor berhasil memperbarui data dokter', async () => {
-    req.params.id = 1;
-    req.body = { nama: 'Dr. Updated' };
-    req.file = { filename: 'updatedFoto.jpg' };
-
-    const updatedDoctor = {
-      foto: 'updatedFoto.jpg',
-      toJSON: () => ({ id: 1, nama: 'Dr. Updated', foto: 'updatedFoto.jpg' })
-    };
-
-    DoctorRepository.updateDoctor = jest.fn().mockResolvedValue(updatedDoctor);
-
-    await DoctorController.updateDoctor(req, res);
-    expect(res.json).toHaveBeenCalledWith({
-      id: 1,
-      nama: 'Dr. Updated',
-      foto: 'updatedFoto.jpg',
-      fotoUrl: 'http://example.com/doctor/foto.jpg'
-    });
-  });
-
-  test('deleteDoctor berhasil menghapus dokter', async () => {
-    req.params.id = 1;
-    const deleteResponse = 'ok';
-
-    DoctorRepository.deleteDoctor = jest.fn().mockResolvedValue(deleteResponse);
-
-    await DoctorController.deleteDoctor(req, res);
-    expect(res.json).toHaveBeenCalledWith({
-      response: 'ok',
-      message: 'Doctor deleted successfully'
-    });
-  });
-
-  test('deleteDoctor gagal karena kesalahan repository', async () => {
-    req.params.id = 1;
-    DoctorRepository.deleteDoctor = jest.fn().mockRejectedValue(new Error('Repository Error'));
-
-    await DoctorController.deleteDoctor(req, res);
-    expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith('Repository Error');
-  });
-
-  test('getAll berhasil mengembalikan semua data dokter', async () => {
-    const doctors = [
-      { id: 1, nama: 'Dr. A', spesialisasi: 'Umum' },
-      { id: 2, nama: 'Dr. B', spesialisasi: 'Bedah' },
-    ];
-
-    DoctorRepository.getAll = jest.fn().mockResolvedValue(doctors);
-
-    await DoctorController.getAll(req, res);
-    expect(res.json).toHaveBeenCalledWith(doctors);
-  });
-
-  test('getAll gagal karena error', async () => {
-    DoctorRepository.getAll = jest.fn().mockRejectedValue(new Error('Error fetching data'));
-
-    await DoctorController.getAll(req, res);
-    expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith('Error fetching data');
-  });
-
-  test('getAll gagal karena kesalahan repository', async () => {
-    DoctorRepository.getAll = jest.fn().mockRejectedValue(new Error('Repository Error'));
-
-    await DoctorController.getAll(req, res);
-    expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith('Repository Error');
-  });
-  it('should handle error when updating doctor', async () => {
-    const req = {
-      params: { id: 1 },
-      body: { nama: 'dr. Error' }
-    };
-    const res = {
-      status: jest.fn().mockReturnThis(),
-      send: jest.fn()
-    };
-  
-    // Paksa repository melempar error
-    jest.spyOn(DoctorRepository, 'updateDoctor').mockRejectedValue(new Error('Something went wrong'));
-  
-    await DoctorController.updateDoctor(req, res);
-  
-    expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith('Something went wrong');
-  });
-
-  it('should return 404 if doctor not found', async () => {
-    const req = { params: { id: 999 } };
-    const res = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    };
-  
-    jest.spyOn(DoctorRepository, 'getDoctorById').mockResolvedValue(null);
-  
-    await DoctorController.getDoctorById(req, res);
-  
-    expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Spesialisasi not found' });
-  });
-  it('should create a doctor without a file', async () => {
-    const req = {
-      body: {
-        nama: 'Dr. Tes',
-        spesialisasiId: 1,
-      },
-      file: undefined, // ini penting!
-    };
-    const res = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn(),
-    };
-  
-    const mockDoctor = {
-      toJSON: () => ({
-        id: 1,
-        nama: 'Dr. Tes',
-        spesialisasiId: 1,
-        foto: null
-      }),
-      foto: null,
-    };
-  
-    jest.spyOn(DoctorRepository, 'createDoctor').mockResolvedValue(mockDoctor);
-  
-    await DoctorController.createDoctor(req, res);
-  
-    expect(res.status).toHaveBeenCalledWith(201);
-    expect(res.json).toHaveBeenCalled();
-  });
-  
 });

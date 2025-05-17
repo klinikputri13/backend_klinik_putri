@@ -62,7 +62,6 @@ class RiwayatRepository {
   };
 
   static async getQueueNumber(appointmentDate, spesialisasiId) {
-    // Ambil hanya tanggal (YYYY-MM-DD)
     const dateOnly = new Date(appointmentDate).toISOString().split("T")[0];
     const startDate = new Date(dateOnly);
     const endDate = new Date(dateOnly);
@@ -81,8 +80,14 @@ class RiwayatRepository {
   }
 
   static async cancel(id) {
-    return await Riwayat.update({ status: 'batal' }, { where: { id } });
+  const riwayat = await Riwayat.findByPk(id);
+  if (!riwayat) {
+    throw new Error("Riwayat tidak ditemukan");
   }
+  await Riwayat.update({ status: 'batal' }, { where: { id } });
+  await Reservasi.update({ status: 'batal' }, { where: { id: riwayat.reservasiId } });
+  return true;
+}
 
   static async getAntrian(id) {
     const history = await Riwayat.findOne({ where: { id } });
@@ -100,6 +105,13 @@ class RiwayatRepository {
     });
     if (!history) throw new Error('Data tidak ditemukan');
     return history;
+  }
+  static async delete(id) {
+  const riwayat = await Riwayat.findByPk(id);
+  if (!riwayat) throw new Error("Riwayat tidak ditemukan");
+  await Riwayat.destroy({ where: { id } });
+  await Reservasi.destroy({ where: { id: riwayat.reservasiId } });
+  return true;
   }
 }
 

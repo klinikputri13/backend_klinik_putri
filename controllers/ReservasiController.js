@@ -8,7 +8,6 @@ class ReservasiController {
       const reservasi = await ReservasiRepository.getAll(req);
       res.status(200).json(reservasi);
     } catch (error) {
-      console.error(error);
       res.status(500).json({ error: error.message });
     }
   }
@@ -21,7 +20,6 @@ class ReservasiController {
       }
       res.status(200).json(reservasi);
     } catch (error) {
-      console.error(error);
       res.status(500).json({ error: error.message });
     }
   }
@@ -59,7 +57,6 @@ class ReservasiController {
         riwayat 
       });
     } catch (error) {
-      console.error(error);
       res.status(500).json({ error: error.message });
     }
   }
@@ -96,7 +93,6 @@ class ReservasiController {
         riwayat 
       });
     } catch (error) {
-      console.error(error);
       res.status(500).json({ error: error.message });
     }
   }
@@ -113,7 +109,6 @@ class ReservasiController {
         reservasi 
       });
     } catch (error) {
-      console.error(error);
       res.status(500).json({ error: error.message });
     }
   }
@@ -129,7 +124,6 @@ class ReservasiController {
         data : reservasi
        });
     } catch (error) {
-      console.error(error);
       res.status(500).json({ error: error.message });
     }
   }

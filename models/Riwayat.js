@@ -23,7 +23,7 @@ const Riwayat = sequelize.define('Riwayat', {
   appointmentDate: { type: DataTypes.DATE, allowNull: false },
   appointmentTime: { type: DataTypes.STRING, allowNull: false },
   status: { type: DataTypes.ENUM('proses', 'selesai', 'batal'), defaultValue: 'proses' },
-  nomorAntrian: { type: DataTypes.INTEGER, allowNull: false },
+ nomorAntrian: { type: DataTypes.INTEGER, allowNull: false, validate: { min: 1 } },
   createdAt: { allowNull: false, type: DataTypes.DATE },
   updatedAt: { allowNull: false, type: DataTypes.DATE },
 }, {
@@ -31,7 +31,17 @@ const Riwayat = sequelize.define('Riwayat', {
   freezeTableName: true,
 });
 
-Riwayat.belongsTo(Reservasi, { foreignKey: 'reservasiId', targetKey: 'id' });
-Riwayat.belongsTo(Spesialisasi, { foreignKey: 'spesialisasiId', targetKey: 'id' });
+Riwayat.belongsTo(Reservasi, {
+  foreignKey: 'reservasiId',
+  targetKey: 'id',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+Riwayat.belongsTo(Spesialisasi, {
+  foreignKey: 'spesialisasiId',
+  targetKey: 'id',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
 
 module.exports = Riwayat;

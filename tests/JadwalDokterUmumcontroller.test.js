@@ -14,12 +14,6 @@ describe('JadwalDokterUmumController', () => {
       send: jest.fn()
     };
 
-    JadwalDokterUmumRepository.getAll = jest.fn();
-    JadwalDokterUmumRepository.getJadwalDokterUmumById = jest.fn();
-    JadwalDokterUmumRepository.create = jest.fn();
-    JadwalDokterUmumRepository.update = jest.fn();
-    JadwalDokterUmumRepository.delete = jest.fn();
-
     jest.clearAllMocks();
   });
 
@@ -48,6 +42,15 @@ describe('JadwalDokterUmumController', () => {
     expect(res.json).toHaveBeenCalledWith(jadwal);
   });
 
+  test('getJadwalDokterUmumById gagal karena data tidak ditemukan', async () => {
+    req.params.id = 1;
+    JadwalDokterUmumRepository.getJadwalDokterUmumById.mockResolvedValue(null);
+
+    await JadwalDokterUmumController.getJadwalDokterUmumById(req, res);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Jadwal Dokter Umum not found' });
+  });
+
   test('getJadwalDokterUmumById gagal karena error dari repository', async () => {
     req.params.id = 1;
     JadwalDokterUmumRepository.getJadwalDokterUmumById.mockRejectedValue(new Error('DB Error'));
@@ -64,7 +67,19 @@ describe('JadwalDokterUmumController', () => {
 
     await JadwalDokterUmumController.createJadwalDokterUmum(req, res);
     expect(res.status).toHaveBeenCalledWith(201);
-    expect(res.json).toHaveBeenCalledWith(created);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Berhasil menambahkan jadwal Dokter Umum',
+      data: created
+    });
+  });
+
+  test('createJadwalDokterUmum gagal karena create return null', async () => {
+    req.body = { nama: 'Dr. B' };
+    JadwalDokterUmumRepository.create.mockResolvedValue(null);
+
+    await JadwalDokterUmumController.createJadwalDokterUmum(req, res);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Jadwal Dokter Umum not found' });
   });
 
   test('createJadwalDokterUmum gagal karena error dari repository', async () => {
@@ -83,7 +98,20 @@ describe('JadwalDokterUmumController', () => {
     JadwalDokterUmumRepository.update.mockResolvedValue(updated);
 
     await JadwalDokterUmumController.updateJadwalDokterUmum(req, res);
-    expect(res.json).toHaveBeenCalledWith(updated);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Berhasil mengubah jadwal Dokter Umum',
+      data: updated
+    });
+  });
+
+  test('updateJadwalDokterUmum gagal karena data tidak ditemukan', async () => {
+    req.params.id = 1;
+    req.body = { nama: 'Dr. C' };
+    JadwalDokterUmumRepository.update.mockResolvedValue(null);
+
+    await JadwalDokterUmumController.updateJadwalDokterUmum(req, res);
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Jadwal Dokter Umum not found' });
   });
 
   test('updateJadwalDokterUmum gagal karena error dari repository', async () => {
@@ -98,11 +126,23 @@ describe('JadwalDokterUmumController', () => {
 
   test('deleteJadwalDokterUmum berhasil menghapus data', async () => {
     req.params.id = 1;
-    const deleted = { message: 'Jadwal deleted' };
+    const deleted = { id: 1, message: 'deleted' };
     JadwalDokterUmumRepository.delete.mockResolvedValue(deleted);
 
     await JadwalDokterUmumController.deleteJadwalDokterUmum(req, res);
-    expect(res.json).toHaveBeenCalledWith(deleted);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Berhasil menghapus jadwal Dokter Umum',
+      data: deleted
+    });
+  });
+
+  test('deleteJadwalDokterUmum gagal karena data tidak ditemukan', async () => {
+    req.params.id = 1;
+    JadwalDokterUmumRepository.delete.mockResolvedValue(null);
+
+    await JadwalDokterUmumController.deleteJadwalDokterUmum(req, res);
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Jadwal Dokter Umum not found' });
   });
 
   test('deleteJadwalDokterUmum gagal karena error dari repository', async () => {

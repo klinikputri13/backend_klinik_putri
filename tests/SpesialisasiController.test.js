@@ -18,12 +18,9 @@ describe('SpesialisasiController', () => {
     jest.clearAllMocks();
   });
 
+  // getAll
   test('getAll berhasil mengembalikan data spesialisasi', async () => {
-    const mockData = {
-      data: [
-        { toJSON: () => ({ id: 1, nama: 'Dokter Gigi', foto: 'gigi.jpg' }) }
-      ]
-    };
+    const mockData = { data: [{ toJSON: () => ({ id: 1, nama: 'Dokter Gigi', foto: 'gigi.jpg' }) }] };
     SpesialisasiRepository.getAll.mockResolvedValue(mockData);
     getFileUrl.mockReturnValue('http://localhost/uploads/spesialisasi/gigi.jpg');
 
@@ -31,22 +28,20 @@ describe('SpesialisasiController', () => {
 
     expect(SpesialisasiRepository.getAll).toHaveBeenCalledWith(req, res);
     expect(res.json).toHaveBeenCalledWith({
-      data: [
-        { id: 1, nama: 'Dokter Gigi', foto: 'gigi.jpg', fotoUrl: 'http://localhost/uploads/spesialisasi/gigi.jpg' }
-      ]
+      data: [{ id: 1, nama: 'Dokter Gigi', foto: 'gigi.jpg', fotoUrl: 'http://localhost/uploads/spesialisasi/gigi.jpg' }]
     });
   });
 
   test('getAll gagal mengembalikan data spesialisasi dan menangani error', async () => {
-    const errorMessage = 'Database error';
-    SpesialisasiRepository.getAll.mockRejectedValue(new Error(errorMessage));
+    SpesialisasiRepository.getAll.mockRejectedValue(new Error('Database error'));
 
     await SpesialisasiController.getAll(req, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith(errorMessage);
+    expect(res.send).toHaveBeenCalledWith('Database error');
   });
 
+  // getSpesialisasiById
   test('getSpesialisasiById berhasil mengembalikan spesialisasi berdasarkan ID', async () => {
     req.params.id = '1';
     const mockData = { toJSON: () => ({ id: 1, nama: 'Dokter Umum', foto: 'umum.jpg' }) };
@@ -64,16 +59,18 @@ describe('SpesialisasiController', () => {
     });
   });
 
-  test('getSpesialisasiById gagal dengan ID tidak ditemukan', async () => {
-    req.params.id = '999';
+  test('getSpesialisasiById returns 404 when spesialisasi not found', async () => {
+    req.params.id = 999;
     SpesialisasiRepository.getSpesialisasiById.mockResolvedValue(null);
 
     await SpesialisasiController.getSpesialisasiById(req, res);
 
+    expect(SpesialisasiRepository.getSpesialisasiById).toHaveBeenCalledWith(999);
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({ message: 'Spesialisasi not found' });
   });
 
+  // createSpesialisasi
   test('createSpesialisasi berhasil membuat spesialisasi baru', async () => {
     req.file = { filename: 'baru.jpg' };
     req.body = { nama: 'Dokter Anak' };
@@ -87,23 +84,26 @@ describe('SpesialisasiController', () => {
     expect(SpesialisasiRepository.createSpesialisasi).toHaveBeenCalledWith({ nama: 'Dokter Anak', foto: 'baru.jpg' });
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({
-      id: 1,
-      nama: 'Dokter Anak',
-      foto: 'baru.jpg',
-      fotoUrl: 'http://localhost/uploads/spesialisasi/baru.jpg'
+      message: 'Berhasil menambahkan layanan Spesialisasi',
+      data: {
+        id: 1,
+        nama: 'Dokter Anak',
+        foto: 'baru.jpg',
+        fotoUrl: 'http://localhost/uploads/spesialisasi/baru.jpg'
+      }
     });
   });
 
   test('createSpesialisasi gagal saat terjadi error', async () => {
-    const errorMessage = 'Error creating spesialisasi';
-    SpesialisasiRepository.createSpesialisasi.mockRejectedValue(new Error(errorMessage));
+    SpesialisasiRepository.createSpesialisasi.mockRejectedValue(new Error('Error creating spesialisasi'));
 
     await SpesialisasiController.createSpesialisasi(req, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith(errorMessage);
+    expect(res.send).toHaveBeenCalledWith('Error creating spesialisasi');
   });
 
+  // uploadFoto
   test('uploadFoto berhasil mengunggah foto baru', async () => {
     req.params.id = '1';
     req.file = { filename: 'foto-baru.jpg' };
@@ -123,7 +123,7 @@ describe('SpesialisasiController', () => {
     });
   });
 
-  test('uploadFoto gagal saat tidak ada file yang diunggah', async () => {
+  test('uploadFoto returns 400 if no file uploaded', async () => {
     req.params.id = '1';
     req.file = null;
 
@@ -133,7 +133,8 @@ describe('SpesialisasiController', () => {
     expect(res.json).toHaveBeenCalledWith({ message: 'No file uploaded' });
   });
 
-  test('updateSpesialisasi berhasil memperbarui data spesialisasi', async () => {
+  // updateSpesialisasi
+  test('updateSpesialisasi berhasil memperbarui data spesialisasi dengan file', async () => {
     req.params.id = '1';
     req.file = { filename: 'update.jpg' };
     req.body = { nama: 'Dokter Mata' };
@@ -146,13 +147,40 @@ describe('SpesialisasiController', () => {
 
     expect(SpesialisasiRepository.updateSpesialisasi).toHaveBeenCalledWith('1', { nama: 'Dokter Mata', foto: 'update.jpg' });
     expect(res.json).toHaveBeenCalledWith({
-      id: 1,
-      nama: 'Dokter Mata',
-      foto: 'update.jpg',
-      fotoUrl: 'http://localhost/uploads/spesialisasi/update.jpg'
+      message: 'Berhasil mengubah layanan Spesialisasi',
+      data: {
+        id: 1,
+        nama: 'Dokter Mata',
+        foto: 'update.jpg',
+        fotoUrl: 'http://localhost/uploads/spesialisasi/update.jpg'
+      }
     });
   });
 
+  test('updateSpesialisasi berhasil memperbarui data spesialisasi tanpa file', async () => {
+    req.params.id = '1';
+    req.file = null;
+    req.body = { nama: 'Dokter Mata Tanpa Foto' };
+
+    const mockData = { toJSON: () => ({ id: 1, nama: 'Dokter Mata Tanpa Foto', foto: null }) };
+    SpesialisasiRepository.updateSpesialisasi.mockResolvedValue(mockData);
+    getFileUrl.mockReturnValue('http://localhost/uploads/spesialisasi/default.jpg');
+
+    await SpesialisasiController.updateSpesialisasi(req, res);
+
+    expect(SpesialisasiRepository.updateSpesialisasi).toHaveBeenCalledWith('1', { nama: 'Dokter Mata Tanpa Foto' });
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Berhasil mengubah layanan Spesialisasi',
+      data: {
+        id: 1,
+        nama: 'Dokter Mata Tanpa Foto',
+        foto: null,
+        fotoUrl: 'http://localhost/uploads/spesialisasi/default.jpg'
+      }
+    });
+  });
+
+  // deleteSpesialisasi
   test('deleteSpesialisasi berhasil menghapus spesialisasi', async () => {
     req.params.id = '1';
     SpesialisasiRepository.deleteSpesialisasi.mockResolvedValue(true);
@@ -164,12 +192,41 @@ describe('SpesialisasiController', () => {
   });
 
   test('deleteSpesialisasi gagal saat terjadi error', async () => {
-    const errorMessage = 'Error deleting spesialisasi';
-    SpesialisasiRepository.deleteSpesialisasi.mockRejectedValue(new Error(errorMessage));
+    SpesialisasiRepository.deleteSpesialisasi.mockRejectedValue(new Error('Error deleting spesialisasi'));
 
     await SpesialisasiController.deleteSpesialisasi(req, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith(errorMessage);
+    expect(res.send).toHaveBeenCalledWith('Error deleting spesialisasi');
   });
+  // Tambahkan test yang memicu error
+test('getAll harus handle error dan panggil res.status 500', async () => {
+  SpesialisasiRepository.getAll.mockRejectedValue(new Error('Database error'));
+
+  await SpesialisasiController.getAll(req, res);
+
+  expect(res.status).toHaveBeenCalledWith(500);
+  expect(res.send).toHaveBeenCalledWith('Database error');
+});
+test('uploadFoto harus mengembalikan 400 jika file tidak ada', async () => {
+  req.file = null;
+  await SpesialisasiController.uploadFoto(req, res);
+
+  expect(res.status).toHaveBeenCalledWith(400);
+  expect(res.json).toHaveBeenCalledWith({ message: 'No file uploaded' });
+});
+test('updateSpesialisasi berhasil tanpa file', async () => {
+  req.file = null;
+  req.params.id = '1';
+  req.body = { nama: 'Test Update' };
+
+  SpesialisasiRepository.updateSpesialisasi.mockResolvedValue({ toJSON: () => ({ id: 1, nama: 'Test Update', foto: null }) });
+  getFileUrl.mockReturnValue('http://localhost/uploads/spesialisasi/default.jpg');
+
+  await SpesialisasiController.updateSpesialisasi(req, res);
+
+  expect(SpesialisasiRepository.updateSpesialisasi).toHaveBeenCalledWith('1', { nama: 'Test Update' });
+  expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: expect.any(String) }));
+});
+
 });

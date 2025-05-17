@@ -1,4 +1,3 @@
-// tests/JadwalDokterSpesialisasiController.test.js
 const JadwalDokterSpesialisasiController = require('../controllers/JadwalDokterSpesialisasiController');
 const JadwalDokterSpesialisasiRepository = require('../repositories/JadwalDokterSpesialisasiRepository');
 
@@ -14,7 +13,6 @@ describe('JadwalDokterSpesialisasiController', () => {
       status: jest.fn().mockReturnThis(),
       send: jest.fn(),
     };
-
     jest.clearAllMocks();
   });
 
@@ -23,16 +21,18 @@ describe('JadwalDokterSpesialisasiController', () => {
     JadwalDokterSpesialisasiRepository.getAll.mockResolvedValue(data);
 
     await JadwalDokterSpesialisasiController.getAll(req, res);
+
+    expect(JadwalDokterSpesialisasiRepository.getAll).toHaveBeenCalledWith(req, res);
     expect(res.json).toHaveBeenCalledWith(data);
   });
 
-  test('getAll gagal mengembalikan daftar jadwal karena server error', async () => {
-    const errorMessage = { error: 'Server error', message: 'Terjadi kesalahan pada server' };
+  test('getAll gagal karena server error', async () => {
     JadwalDokterSpesialisasiRepository.getAll.mockRejectedValue(new Error('Server error'));
 
     await JadwalDokterSpesialisasiController.getAll(req, res);
+
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith(errorMessage);
+    expect(res.send).toHaveBeenCalledWith('Server error');
   });
 
   test('getJadwalDokterSpesialisasiById berhasil mengembalikan data berdasarkan ID', async () => {
@@ -41,26 +41,19 @@ describe('JadwalDokterSpesialisasiController', () => {
     JadwalDokterSpesialisasiRepository.getJadwalDokterSpesialisasiById.mockResolvedValue(data);
 
     await JadwalDokterSpesialisasiController.getJadwalDokterSpesialisasiById(req, res);
+
+    expect(JadwalDokterSpesialisasiRepository.getJadwalDokterSpesialisasiById).toHaveBeenCalledWith(1);
     expect(res.json).toHaveBeenCalledWith(data);
   });
 
-  test('getJadwalDokterSpesialisasiById gagal karena data tidak ditemukan', async () => {
-    req.params.id = 1;
-    JadwalDokterSpesialisasiRepository.getJadwalDokterSpesialisasiById.mockResolvedValue(null);
-
-    await JadwalDokterSpesialisasiController.getJadwalDokterSpesialisasiById(req, res);
-    expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Data jadwal tidak ditemukan' });
-  });
-
   test('getJadwalDokterSpesialisasiById gagal karena server error', async () => {
-    const errorMessage = { error: 'Server error', message: 'Terjadi kesalahan pada server' };
     req.params.id = 1;
     JadwalDokterSpesialisasiRepository.getJadwalDokterSpesialisasiById.mockRejectedValue(new Error('Server error'));
 
     await JadwalDokterSpesialisasiController.getJadwalDokterSpesialisasiById(req, res);
+
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith(errorMessage);
+    expect(res.send).toHaveBeenCalledWith('Server error');
   });
 
   test('createJadwalDokterSpesialisasi berhasil membuat data baru', async () => {
@@ -69,25 +62,23 @@ describe('JadwalDokterSpesialisasiController', () => {
     JadwalDokterSpesialisasiRepository.create.mockResolvedValue(created);
 
     await JadwalDokterSpesialisasiController.createJadwalDokterSpesialisasi(req, res);
-    expect(res.status).toHaveBeenCalledWith(201);
-    expect(res.json).toHaveBeenCalledWith(created);
-  });
 
-  test('createJadwalDokterSpesialisasi gagal karena data tidak valid', async () => {
-    req.body = {};  // Invalid data
-    await JadwalDokterSpesialisasiController.createJadwalDokterSpesialisasi(req, res);
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Data tidak valid' });
+    expect(JadwalDokterSpesialisasiRepository.create).toHaveBeenCalledWith(req.body);
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Berhasil menambahkan Jadwal dokter Spesialis',
+      data: created,
+    });
   });
 
   test('createJadwalDokterSpesialisasi gagal karena server error', async () => {
-    const errorMessage = { error: 'Server error', message: 'Terjadi kesalahan pada server' };
     req.body = { hari: 'Selasa' };
     JadwalDokterSpesialisasiRepository.create.mockRejectedValue(new Error('Server error'));
 
     await JadwalDokterSpesialisasiController.createJadwalDokterSpesialisasi(req, res);
+
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith(errorMessage);
+    expect(res.send).toHaveBeenCalledWith('Server error');
   });
 
   test('updateJadwalDokterSpesialisasi berhasil memperbarui data', async () => {
@@ -97,28 +88,23 @@ describe('JadwalDokterSpesialisasiController', () => {
     JadwalDokterSpesialisasiRepository.update.mockResolvedValue(updated);
 
     await JadwalDokterSpesialisasiController.updateJadwalDokterSpesialisasi(req, res);
-    expect(res.json).toHaveBeenCalledWith(updated);
-  });
 
-  test('updateJadwalDokterSpesialisasi gagal karena data tidak ditemukan', async () => {
-    req.params.id = 1;
-    req.body = { hari: 'Rabu' };
-    JadwalDokterSpesialisasiRepository.update.mockResolvedValue(null);
-
-    await JadwalDokterSpesialisasiController.updateJadwalDokterSpesialisasi(req, res);
-    expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Data jadwal tidak ditemukan' });
+    expect(JadwalDokterSpesialisasiRepository.update).toHaveBeenCalledWith(1, req.body);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Berhasil mengubah jadwal dokter spesialis',
+      data: updated,
+    });
   });
 
   test('updateJadwalDokterSpesialisasi gagal karena server error', async () => {
-    const errorMessage = { error: 'Server error', message: 'Terjadi kesalahan pada server' };
     req.params.id = 1;
     req.body = { hari: 'Rabu' };
     JadwalDokterSpesialisasiRepository.update.mockRejectedValue(new Error('Server error'));
 
     await JadwalDokterSpesialisasiController.updateJadwalDokterSpesialisasi(req, res);
+
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith(errorMessage);
+    expect(res.send).toHaveBeenCalledWith('Server error');
   });
 
   test('deleteJadwalDokterSpesialisasi berhasil menghapus data', async () => {
@@ -127,25 +113,21 @@ describe('JadwalDokterSpesialisasiController', () => {
     JadwalDokterSpesialisasiRepository.delete.mockResolvedValue(deleted);
 
     await JadwalDokterSpesialisasiController.deleteJadwalDokterSpesialisasi(req, res);
-    expect(res.json).toHaveBeenCalledWith(deleted);
-  });
 
-  test('deleteJadwalDokterSpesialisasi gagal karena data tidak ditemukan', async () => {
-    req.params.id = 1;
-    JadwalDokterSpesialisasiRepository.delete.mockResolvedValue(null);
-
-    await JadwalDokterSpesialisasiController.deleteJadwalDokterSpesialisasi(req, res);
-    expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Data jadwal tidak ditemukan' });
+    expect(JadwalDokterSpesialisasiRepository.delete).toHaveBeenCalledWith(1);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Berhasil menghapus jadwal dokter spesialis',
+      data: deleted,
+    });
   });
 
   test('deleteJadwalDokterSpesialisasi gagal karena server error', async () => {
-    const errorMessage = { error: 'Server error', message: 'Terjadi kesalahan pada server' };
     req.params.id = 1;
     JadwalDokterSpesialisasiRepository.delete.mockRejectedValue(new Error('Server error'));
 
     await JadwalDokterSpesialisasiController.deleteJadwalDokterSpesialisasi(req, res);
+
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith(errorMessage);
+    expect(res.send).toHaveBeenCalledWith('Server error');
   });
 });

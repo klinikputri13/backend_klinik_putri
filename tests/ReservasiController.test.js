@@ -116,7 +116,6 @@ describe('ReservasiController', () => {
         json: jest.fn(),
       };
 
-      // Mock the repositories
       ReservasiRepository.createReservasi.mockResolvedValue(mockReservasi);
       RiwayatRepository.getQueueNumber.mockResolvedValue('002');
       RiwayatRepository.create.mockResolvedValue(mockRiwayat);
@@ -124,7 +123,11 @@ describe('ReservasiController', () => {
       await ReservasiController.createReservation(req, res);
 
       expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith({ reservasi: mockReservasi, riwayat: mockRiwayat });
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Berhasil menambahkan reservasi online',
+        reservasi: mockReservasi,
+        riwayat: mockRiwayat,
+      });
     });
 
     it('should handle errors in createReservation', async () => {
@@ -140,7 +143,7 @@ describe('ReservasiController', () => {
           appointmentDate: '2025-06-01',
           appointmentTime: '12:00',
         },
-        params: { id: 1 },  // spesialisasiId
+        params: { id: 1 },
       };
 
       const res = {
@@ -148,10 +151,77 @@ describe('ReservasiController', () => {
         json: jest.fn(),
       };
 
-      // Mock repository to throw error
       ReservasiRepository.createReservasi.mockRejectedValue(new Error(errorMessage));
 
       await ReservasiController.createReservation(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: errorMessage });
+    });
+  });
+
+  // Test createReservasi (Onsite reservation)
+  describe('createReservasi', () => {
+    it('should create a new onsite reservation with riwayat', async () => {
+      const mockReservasi = { id: 1, nama: 'Jane Doe' };
+      const mockRiwayat = { id: 1, nomorAntrian: '003' };
+
+      const req = {
+        body: {
+          spesialisasiId: 1,
+          nama: 'Jane Doe',
+          umur: 25,
+          no_hp: '081234567890',
+          alamat: 'Test Address',
+          jenis_kelamin: 'P',
+          appointmentDate: '2025-06-01',
+          appointmentTime: '12:00',
+        },
+      };
+
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+
+      ReservasiRepository.createReservasi.mockResolvedValue(mockReservasi);
+      RiwayatRepository.getQueueNumber.mockResolvedValue('003');
+      RiwayatRepository.create.mockResolvedValue(mockRiwayat);
+
+      await ReservasiController.createReservasi(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Berhasil menambahkan Reservasi Onsite',
+        reservasi: mockReservasi,
+        riwayat: mockRiwayat,
+      });
+    });
+
+    it('should handle errors in createReservasi', async () => {
+      const errorMessage = 'Failed to create onsite reservation';
+
+      const req = {
+        body: {
+          spesialisasiId: 1,
+          nama: 'Jane Doe',
+          umur: 25,
+          no_hp: '081234567890',
+          alamat: 'Test Address',
+          jenis_kelamin: 'P',
+          appointmentDate: '2025-06-01',
+          appointmentTime: '12:00',
+        },
+      };
+
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+
+      ReservasiRepository.createReservasi.mockRejectedValue(new Error(errorMessage));
+
+      await ReservasiController.createReservasi(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ error: errorMessage });
@@ -173,180 +243,12 @@ describe('ReservasiController', () => {
       await ReservasiController.updateReservasi(req, res);
 
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({ reservasi: mockReservasi });
-    });
-
-    it('should return 404 if reservation not found to update', async () => {
-      const req = { params: { id: 1 }, body: { nama: 'Updated Name' } };
-      const res = {
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn(),
-      };
-
-      ReservasiRepository.updateReservasi.mockResolvedValue(null);
-
-      await ReservasiController.updateReservasi(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith({ message: 'Reservasi not found' });
-    });
-
-    it('should handle errors in updateReservasi', async () => {
-      const errorMessage = 'Failed to update reservation';
-      const req = { params: { id: 1 }, body: { nama: 'Updated Name' } };
-      const res = {
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn(),
-      };
-
-      ReservasiRepository.updateReservasi.mockRejectedValue(new Error(errorMessage));
-
-      await ReservasiController.updateReservasi(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: errorMessage });
-    });
-  });
-
-  // Test deleteReservasi
-  describe('deleteReservasi', () => {
-    it('should delete a reservation', async () => {
-      const req = { params: { id: 1 } };
-      const res = {
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn(),
-      };
-
-      ReservasiRepository.deleteReservasi.mockResolvedValue(true);
-
-      await ReservasiController.deleteReservasi(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({ message: 'Reservasi deleted successfully' });
-    });
-
-    it('should return 404 if reservation not found to delete', async () => {
-      const req = { params: { id: 1 } };
-      const res = {
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn(),
-      };
-
-      ReservasiRepository.deleteReservasi.mockResolvedValue(null);
-
-      await ReservasiController.deleteReservasi(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith({ message: 'Reservasi not found' });
-    });
-
-    it('should handle errors in deleteReservasi', async () => {
-      const errorMessage = 'Failed to delete reservation';
-      const req = { params: { id: 1 } };
-      const res = {
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn(),
-      };
-
-      ReservasiRepository.deleteReservasi.mockRejectedValue(new Error(errorMessage));
-
-      await ReservasiController.deleteReservasi(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: errorMessage });
-    });
-  });
-// Menambahkan tes untuk bagian yang belum tercakup (63-91)
-describe('ReservasiController - Additional Tests', () => {
-  
-  // Test untuk createReservasi
-  describe('createReservasi', () => {
-    it('should create a new reservation', async () => {
-      const mockReservasi = {
-        id: 1,
-        spesialisasiId: 1,
-        nama: 'Jane Doe',
-        umur: 25,
-        no_hp: '081234567890',
-        alamat: 'Test Address',
-        jenis_kelamin: 'P',
-        appointmentDate: '2025-06-01',
-        appointmentTime: '12:00',
-        status: 'proses',
-      };
-      const mockRiwayat = {
-        id: 1,
-        reservasiId: 1,
-        spesialisasiId: 1,
-        appointmentDate: '2025-06-01',
-        appointmentTime: '12:00',
-        nama: 'Jane Doe',
-        status: 'proses',
-        nomorAntrian: '001',
-      };
-
-      const req = {
-        body: {
-          spesialisasiId: 1,
-          nama: 'Jane Doe',
-          umur: 25,
-          no_hp: '081234567890',
-          alamat: 'Test Address',
-          jenis_kelamin: 'P',
-          appointmentDate: '2025-06-01',
-          appointmentTime: '12:00',
-        },
-      };
-      const res = {
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn(),
-      };
-
-      // Mock the repository methods
-      ReservasiRepository.createReservasi.mockResolvedValue(mockReservasi);
-      RiwayatRepository.getQueueNumber.mockResolvedValue('001');
-      RiwayatRepository.create.mockResolvedValue(mockRiwayat);
-
-      await ReservasiController.createReservasi(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith({
+        message: 'Berhasil mengubah reservasi',
         reservasi: mockReservasi,
-        riwayat: mockRiwayat,
       });
     });
 
-    it('should handle errors in createReservasi', async () => {
-      const errorMessage = 'Failed to create new reservation';
-      const req = {
-        body: {
-          spesialisasiId: 1,
-          nama: 'Jane Doe',
-          umur: 25,
-          no_hp: '081234567890',
-          alamat: 'Test Address',
-          jenis_kelamin: 'P',
-          appointmentDate: '2025-06-01',
-          appointmentTime: '12:00',
-        },
-      };
-      const res = {
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn(),
-      };
-
-      // Mock repository to throw error
-      ReservasiRepository.createReservasi.mockRejectedValue(new Error(errorMessage));
-
-      await ReservasiController.createReservasi(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: errorMessage });
-    });
-  });
-
-  // Test untuk updateReservasi (sudah ada di bagian sebelumnya)
-  describe('updateReservasi', () => {
     it('should return 404 if reservation not found to update', async () => {
       const req = { params: { id: 1 }, body: { nama: 'Updated Name' } };
       const res = {
@@ -378,6 +280,58 @@ describe('ReservasiController - Additional Tests', () => {
       expect(res.json).toHaveBeenCalledWith({ error: errorMessage });
     });
   });
+
+  describe('deleteReservasi', () => {
+  it('deleteReservasi berhasil menghapus data reservasi', async () => {
+    const mockReservasi = { id: 1, nama: 'John Doe' };
+    const req = { params: { id: 1 } };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+
+    ReservasiRepository.deleteReservasi = jest.fn().mockResolvedValue(mockReservasi);
+
+    await ReservasiController.deleteReservasi(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Data reservasi berhasil dihapus',
+      data: mockReservasi,
+    });
+  });
+
+  it('deleteReservasi gagal karena reservasi tidak ditemukan', async () => {
+    const req = { params: { id: 999 } };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+
+    ReservasiRepository.deleteReservasi = jest.fn().mockResolvedValue(null);
+
+    await ReservasiController.deleteReservasi(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Reservasi not found' });
+  });
+
+  it('deleteReservasi gagal karena error dari server', async () => {
+    const req = { params: { id: 1 } };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+
+    ReservasiRepository.deleteReservasi = jest.fn().mockRejectedValue(new Error('Internal Error'));
+
+    await ReservasiController.deleteReservasi(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Internal Error' });
+  });
 });
+
+
 
 });

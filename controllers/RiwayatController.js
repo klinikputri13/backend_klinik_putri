@@ -1,6 +1,6 @@
 const RiwayatRepository = require('../repositories/RiwayatRepository');
 
-class RiwayatController {
+  class RiwayatController {
   static async getAll(req, res) {
     try {
       const history = await RiwayatRepository.getAll(req);
@@ -39,6 +39,17 @@ class RiwayatController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  static async delete(req, res) {
+  try {
+    const { id } = req.params;
+    await RiwayatRepository.delete(id);
+    res.status(200).json({ message: "Riwayat berhasil dihapus" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
 }
 
 module.exports = RiwayatController;

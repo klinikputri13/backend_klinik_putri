@@ -29,6 +29,9 @@ describe('AuthController', () => {
 
     await AuthController.login(req, res);
 
+    expect(AuthService.login).toHaveBeenCalledWith({ username: 'admin', password: 'password123' });
+    expect(jwt.decode).toHaveBeenCalledWith(mockToken);
+    expect(res.status).not.toHaveBeenCalled();
     expect(res.json).toHaveBeenCalledWith({
       user: mockUser,
       token: mockToken,
@@ -44,6 +47,7 @@ describe('AuthController', () => {
 
     await AuthController.login(req, res);
 
+    expect(AuthService.login).toHaveBeenCalledWith({ username: 'admin', password: 'wrongpassword' });
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ message: 'Invalid username or password' });
   });
@@ -56,6 +60,7 @@ describe('AuthController', () => {
 
     await AuthController.register(req, res);
 
+    expect(AuthService.register).toHaveBeenCalledWith(req.body);
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith(mockUser);
   });
@@ -68,6 +73,7 @@ describe('AuthController', () => {
 
     await AuthController.register(req, res);
 
+    expect(AuthService.register).toHaveBeenCalledWith(req.body);
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ message: 'Registration failed' });
   });
@@ -80,6 +86,7 @@ describe('AuthController', () => {
 
     await AuthController.adminRegister(req, res);
 
+    expect(AuthService.adminRegister).toHaveBeenCalledWith(req.body);
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith(mockAdmin);
   });
@@ -92,6 +99,7 @@ describe('AuthController', () => {
 
     await AuthController.adminRegister(req, res);
 
+    expect(AuthService.adminRegister).toHaveBeenCalledWith(req.body);
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ message: 'Admin registration failed' });
   });
@@ -106,6 +114,9 @@ describe('AuthController', () => {
 
     await AuthController.adminLogin(req, res);
 
+    expect(AuthService.adminLogin).toHaveBeenCalledWith({ username: 'admin', password: 'adminpassword123' });
+    expect(jwt.decode).toHaveBeenCalledWith(mockToken);
+    expect(res.status).not.toHaveBeenCalled();
     expect(res.json).toHaveBeenCalledWith({
       admin: mockAdmin,
       token: mockToken,
@@ -121,6 +132,7 @@ describe('AuthController', () => {
 
     await AuthController.adminLogin(req, res);
 
+    expect(AuthService.adminLogin).toHaveBeenCalledWith({ username: 'admin', password: 'wrongpassword' });
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ message: 'Invalid admin credentials' });
   });

@@ -4,30 +4,37 @@ const { getFileUrl } = require('../utils/fileUtils');
 
 jest.mock('../repositories/AdminRepository');
 jest.mock('../utils/fileUtils', () => ({
-  getFileUrl: jest.fn().mockReturnValue('http://localhost/admin/foto.jpg')
+  getFileUrl: jest.fn().mockReturnValue('http://localhost/admin/foto.jpg'),
 }));
 
 describe('AdminController', () => {
   let req, res;
 
   beforeEach(() => {
-    req = { body: {}, params: {}, file: {}, query: {} };
+    req = { body: {}, params: {}, file: null, query: {} };
     res = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
-      send: jest.fn()
+      send: jest.fn(),
     };
   });
 
+  // getAllAdmin
   test('getAllAdmin berhasil mengembalikan daftar admin', async () => {
-    const mockAdmins = [
-      { id: 1, nama: 'Admin A', username: 'admina' },
-      { id: 2, nama: 'Admin B', username: 'adminb' }
-    ];
+    const mockAdmins = {
+      data: [
+        { id: 1, nama: 'Admin A', username: 'admina' },
+        { id: 2, nama: 'Admin B', username: 'adminb' },
+      ],
+      total: 2,
+      page: 1,
+      limit: 10,
+    };
     AdminRepository.getAllAdmin.mockResolvedValue(mockAdmins);
 
     await AdminController.getAllAdmin(req, res);
 
+    expect(AdminRepository.getAllAdmin).toHaveBeenCalledWith(req, res);
     expect(res.json).toHaveBeenCalledWith(mockAdmins);
   });
 
@@ -41,6 +48,7 @@ describe('AdminController', () => {
     expect(res.send).toHaveBeenCalledWith('Server error');
   });
 
+  // getAdminById
   test('getAdminById berhasil mengembalikan admin', async () => {
     const mockAdmin = { id: 1, nama: 'Admin A', username: 'admina' };
     req.params.id = 1;
@@ -48,6 +56,7 @@ describe('AdminController', () => {
 
     await AdminController.getAdminById(req, res);
 
+    expect(AdminRepository.getAdminById).toHaveBeenCalledWith(1);
     expect(res.json).toHaveBeenCalledWith(mockAdmin);
   });
 
@@ -62,13 +71,14 @@ describe('AdminController', () => {
     expect(res.send).toHaveBeenCalledWith('Admin tidak ditemukan');
   });
 
+  // createAdmin
   test('createAdmin berhasil membuat admin', async () => {
     const newAdmin = {
       nama: 'Admin Baru',
       username: 'adminbaru',
       password: 'rahasia123',
       foto: 'admin.jpg',
-      aktif: true
+      aktif: true,
     };
     req.body = newAdmin;
     const createdAdmin = { id: 3, ...newAdmin };
@@ -76,6 +86,7 @@ describe('AdminController', () => {
 
     await AdminController.createAdmin(req, res);
 
+    expect(AdminRepository.createAdmin).toHaveBeenCalledWith(newAdmin);
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith(createdAdmin);
   });
@@ -91,6 +102,7 @@ describe('AdminController', () => {
     expect(res.send).toHaveBeenCalledWith('Data tidak valid');
   });
 
+  // uploadFoto
   test('uploadFoto berhasil mengunggah foto admin', async () => {
     req.params.id = 1;
     req.file = { filename: 'foto.jpg' };
@@ -102,19 +114,21 @@ describe('AdminController', () => {
       toJSON: jest.fn().mockReturnValue({
         id: 1,
         nama: 'Admin Foto',
-        foto: 'foto.jpg'
-      })
+        foto: 'foto.jpg',
+      }),
     };
 
     AdminRepository.updateAdmin.mockResolvedValue(updatedAdmin);
 
     await AdminController.uploadFoto(req, res);
 
+    expect(AdminRepository.updateAdmin).toHaveBeenCalledWith(1, { foto: 'foto.jpg' });
+    expect(getFileUrl).toHaveBeenCalledWith('foto.jpg', req, 'admin');
     expect(res.json).toHaveBeenCalledWith({
       id: 1,
       nama: 'Admin Foto',
       foto: 'foto.jpg',
-      fotoUrl: 'http://localhost/admin/foto.jpg'
+      fotoUrl: 'http://localhost/admin/foto.jpg',
     });
   });
 
@@ -127,7 +141,7 @@ describe('AdminController', () => {
     expect(res.json).toHaveBeenCalledWith({ message: 'No file uploaded' });
   });
 
-  test('uploadFoto gagal karena error', async () => {
+  test('uploadFoto gagal karena error saat update', async () => {
     req.params.id = 1;
     req.file = { filename: 'foto.jpg' };
 
@@ -139,6 +153,7 @@ describe('AdminController', () => {
     expect(res.send).toHaveBeenCalledWith('Gagal update');
   });
 
+  // updateFoto
   test('updateFoto berhasil memperbarui foto admin', async () => {
     req.params.id = 1;
     req.file = { filename: 'foto_baru.jpg' };
@@ -150,20 +165,22 @@ describe('AdminController', () => {
       toJSON: jest.fn().mockReturnValue({
         id: 1,
         nama: 'Admin Update',
-        foto: 'foto_baru.jpg'
-      })
+        foto: 'foto_baru.jpg',
+      }),
     };
 
     AdminRepository.updateAdmin.mockResolvedValue(updatedAdmin);
 
     await AdminController.updateFoto(req, res);
 
+    expect(AdminRepository.updateAdmin).toHaveBeenCalledWith(1, { foto: 'foto_baru.jpg' });
+    expect(getFileUrl).toHaveBeenCalledWith('foto_baru.jpg', req, 'admin');
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       id: 1,
       nama: 'Admin Update',
       foto: 'foto_baru.jpg',
-      fotoUrl: 'http://localhost/admin/foto.jpg'
+      fotoUrl: 'http://localhost/admin/foto.jpg',
     });
   });
 

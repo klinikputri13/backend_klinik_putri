@@ -33,6 +33,7 @@ app.use(
       process.env.CORS_METHODS === '*'
         ? '*'
         : process.env.CORS_METHODS?.split(' '),
+           credentials: true,
   })
 );
 app.use(Cookies());
@@ -50,7 +51,6 @@ app.use('/api/doctor', doctorRoutes);
 app.use('/api/jadwal-dokter-spesialisasi', jadwalDokterSpesialisasiRoutes);
 app.use('/api/jadwal-dokter-umum', jadwalDokterUmumRoutes);
 app.use('/api/footer', footerRoutes);
-
 
 // user
 app.use('/api/riwayat', riwayatRoutes);
